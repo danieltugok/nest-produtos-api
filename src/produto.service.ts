@@ -1,32 +1,37 @@
 import { Injectable } from "@nestjs/common";
+import { InjectModel } from "@nestjs/sequelize";
 import { Produto } from "./produto.model";
 
 @Injectable()
 export class ProdutosService {
-  produtos: Produto[] = [
-    // new Produto('LIV01', 'Livro 01', 29.90),
-    // new Produto('LIV02', 'Livro 02', 99.90),
-    // new Produto('LIV03', 'Livro 03', 69.90),
-  ];
+  constructor(
+    @InjectModel(Produto)
+    private produtoModel: typeof Produto
+    ){}
 
-  obterTodos(): Produto[] {
-    return this.produtos;
+  async obterTodos(): Promise<Produto[]> {
+    return this.produtoModel.findAll();
   }
 
-  obterUm(id: number): Produto {
-    return this.produtos[0];
+  async obterUm(id: number): Promise<Produto> {
+    return this.produtoModel.findByPk(id);
   }
 
-  criar(produto: Produto){
-    this.produtos.push(produto);
+  async criar(produto: Produto){
+    this.produtoModel.create(produto);
   }
 
-  alterar(produto: Produto): Produto {
-    return produto;
+  async alterar(produto: Produto): Promise<any> {
+    return this.produtoModel.update(produto, {
+      where: {
+        id: produto.id
+      }
+    });
   }
 
-  apagar(id: number) {
-    this.produtos.pop();
+  async apagar(id: number) {
+    const produto: Produto = await this.obterUm(id);
+    produto.destroy();
   }
   
 }
